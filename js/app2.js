@@ -559,7 +559,15 @@ function inDateRange(d) {
   return (!r.from || d >= r.from) && (!r.to || d <= r.to);
 }
 const _withCats0 = withCats;
-withCats = function () { return _withCats0().filter((t) => inDateRange(t.date)); };
+withCats = function () {
+  return _withCats0()
+    .filter((t) => inDateRange(t.date))
+    .map((t) => {
+      // paired card payments always land in Transfers unless the user overrode the payee
+      if (t.xfer && !APP.overrides[normalizePayee(t.desc)]) t.cat = 'Transfers';
+      return t;
+    });
+};
 
 function rangeLabel() {
   const r = APP.range;

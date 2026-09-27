@@ -510,6 +510,7 @@ function renderReport() {
 }
 
 /* ================= tabs ================= */
+const TAB_RENDERERS = {};
 function switchTab(name) {
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach((p) => { p.hidden = p.id !== 'panel-' + name; });
@@ -517,6 +518,7 @@ function switchTab(name) {
   if (name === 'transactions') renderTransactions();
   if (name === 'findings') renderFindings();
   if (name === 'report') renderReport();
+  if (TAB_RENDERERS[name]) TAB_RENDERERS[name]();
 }
 
 /* ================= boot ================= */

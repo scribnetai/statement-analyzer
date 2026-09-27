@@ -222,3 +222,31 @@ td.neg{color:#ff9d9d} td.pos{color:#7de8a8}
 .parse-status.ok{border-color:rgba(61,220,132,.45)}
 .parse-status.error{border-color:rgba(255,107,107,.5);color:#ffb3b3}
 .btn.small{padding:6px 12px;font-size:.82rem}
+
+/* v2: budgeting tools */
+.debt-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.debt-form .input{min-width:130px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.goal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.goal-card{background:#141a28;border:1px solid var(--border2);border-radius:12px;padding:14px}
+.goal-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.health-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px}
+.health-form label{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted)}
+.health-form .input{width:100%}
+.score-row{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--border)}
+.score-row:last-child{border-bottom:none}
+.guard{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.guard:last-child{border-bottom:none}
+.guard-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.guard.ok .guard-dot{background:#51cf66}
+.guard.bad .guard-dot{background:#ff6b6b}
+.guard strong{margin-left:auto}
+.lede-num{font-size:2.6rem;font-weight:800;margin:6px 0}
+.lede-num.pos{color:#51cf66}
+.lede-num.neg{color:#ff6b6b}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge.ok{background:#1f3a2a;color:#51cf66}
+.badge.warn{background:#3a2f1a;color:#ffd43b}
+.badge.bad{background:#3a1f1f;color:#ff6b6b}
+.debtchart{width:100%;height:auto;background:#141a28;border:1px solid var(--border2);border-radius:12px}
+.debtchart .trend-label{fill:#8a94a6;font-size:11px}

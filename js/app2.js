@@ -524,17 +524,93 @@ const _boot2 = boot;
 boot = function (txns, fileName, demo) {
   _boot2(txns, fileName, demo);
   if (demo) seedDemoProfile();
+  APP.range = { from: null, to: null };
+  const rp = document.getElementById('rangePreset');
+  if (rp) {
+    rp.value = 'all';
+    document.getElementById('rangeFrom').hidden = true;
+    document.getElementById('rangeTo').hidden = true;
+    if (txns.length) {
+      const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const ds = txns.map((t) => t.date.getTime());
+      document.getElementById('rangeFrom').min = iso(new Date(Math.min.apply(null, ds)));
+      document.getElementById('rangeTo').max = iso(new Date(Math.max.apply(null, ds)));
+      document.getElementById('rangeFrom').value = ''; document.getElementById('rangeTo').value = '';
+    }
+  }
+  rerenderTab();
 };
 const _clear2 = clearSession;
 clearSession = function () {
   _clear2();
   APP.profile = blankProfile();
+  APP.range = { from: null, to: null };
+  const rp = document.getElementById('rangePreset'); if (rp) rp.value = 'all';
 };
+
+/* ================= global date range ================= */
+APP.range = { from: null, to: null }; // null = unbounded; filters every tab via withCats()
+function maxTxnDate() {
+  if (!APP.txns.length) return null;
+  return new Date(Math.max.apply(null, APP.txns.map((t) => t.date.getTime())));
+}
+function inDateRange(d) {
+  const r = APP.range;
+  return (!r.from || d >= r.from) && (!r.to || d <= r.to);
+}
+const _withCats0 = withCats;
+withCats = function () { return _withCats0().filter((t) => inDateRange(t.date)); };
+
+function rangeLabel() {
+  const r = APP.range;
+  if (!r.from && !r.to) return 'All time';
+  const f = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return (r.from ? f(r.from) : '…') + ' – ' + (r.to ? f(r.to) : '…');
+}
+function applyPreset(v) {
+  const maxD = maxTxnDate();
+  const showCustom = v === 'custom';
+  $('rangeFrom').hidden = !showCustom; $('rangeTo').hidden = !showCustom;
+  if (!maxD) return;
+  const som = (y, m) => new Date(y, m, 1); // start of month
+  const eom = (y, m) => new Date(y, m + 1, 0, 23, 59, 59); // end of month
+  const Y = maxD.getFullYear(), M = maxD.getMonth();
+  let from = null, to = null;
+  if (v === '1m') { from = som(Y, M - 1); to = eom(Y, M - 1); }
+  else if (v === '3m') { from = som(Y, M - 2); to = eom(Y, M); }
+  else if (v === '6m') { from = som(Y, M - 5); to = eom(Y, M); }
+  else if (v === 'ytd') { from = som(Y, 0); to = new Date(maxD.getTime()); }
+  else if (v === 'custom') {
+    const f = $('rangeFrom').value, t = $('rangeTo').value;
+    from = f ? new Date(f + 'T00:00:00') : null;
+    to = t ? new Date(t + 'T23:59:59') : null;
+  }
+  APP.range = { from, to };
+  if (!showCustom) {
+    // keep custom inputs in sync for when the user switches to Custom
+    const iso = (d) => d ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : '';
+    $('rangeFrom').value = iso(from); $('rangeTo').value = iso(to);
+  }
+  rerenderTab();
+}
+function rerenderTab() {
+  const active = document.querySelector('#tabs button.active');
+  if (active) switchTab(active.dataset.tab);
+  const meta = document.getElementById('dashMeta');
+  if (meta && APP.txns.length) {
+    const n = withCats().length;
+    meta.textContent = `${APP.fileName} · ${rangeLabel()} · showing ${n} of ${APP.txns.length} transactions`;
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   $('exportProfileBtn').addEventListener('click', exportProfile);
   $('importProfileBtn').addEventListener('click', () => $('profileInput').click());
   $('profileInput').addEventListener('change', (e) => { if (e.target.files[0]) importProfile(e.target.files[0]); e.target.value = ''; });
+  $('rangePreset').addEventListener('change', (e) => applyPreset(e.target.value));
+  const customChanged = () => { $('rangePreset').value = 'custom'; applyPreset('custom'); };
+  $('rangeFrom').addEventListener('change', customChanged);
+  $('rangeTo').addEventListener('change', customChanged);
   const tb = document.querySelector('.toolbar-actions');
   const span = document.createElement('span');
   span.id = 'profileMsg'; span.className = 'msg';

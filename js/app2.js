@@ -29,6 +29,7 @@ function median(arr) {
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
+const fmt0 = (n) => '$' + Math.round(n).toLocaleString('en-US');
 
 /* ================= recurring detector (Rocket Money style) ================= */
 function detectRecurring(list) {
@@ -416,7 +417,7 @@ function renderHealth() {
 
   const guards = [
     { name: 'Housing ≤ 30% of income', val: h.housing / h.income, pass: h.housing / h.income <= 0.3, fmt: (v) => (v * 100).toFixed(0) + '%' },
-    { name: 'Transport ≤ 15%', val: (h.actuals['Transport'] || 0) / h.income, pass: (h.actuals['Transport'] || 0) / h.income <= 0.15, fmt: (v) => (v * 100).toFixed(0) + '%' },
+    { name: 'Transport ≤ 15%', val: (h.actuals['Gas & Transit'] || 0) / h.income, pass: (h.actuals['Gas & Transit'] || 0) / h.income <= 0.15, fmt: (v) => (v * 100).toFixed(0) + '%' },
     { name: 'Food (groceries + dining) ≤ 15%', val: ((h.actuals['Groceries'] || 0) + (h.actuals['Dining & Coffee'] || 0)) / h.income, pass: ((h.actuals['Groceries'] || 0) + (h.actuals['Dining & Coffee'] || 0)) / h.income <= 0.15, fmt: (v) => (v * 100).toFixed(0) + '%' },
     { name: 'Saving ≥ 20% of income', val: (h.income - h.outflow) / h.income, pass: (h.income - h.outflow) / h.income >= 0.2, fmt: (v) => (v * 100).toFixed(0) + '%' },
   ];
@@ -474,7 +475,7 @@ function renderHealth() {
       : '<p class="muted">No big gaps vs the benchmarks — spending looks tight already.</p>'}
     </div>`;
 
-  const bind = (id, key) => { $(id).addEventListener('change', (e) => { const v = parseFloat(e.target.value); P[key] = (v > 0 || v === 0) && e.target.value !== '' ? v : null; renderHealth(); }); };
+  const bind = (id, key) => { $(id.replace(/^#/, '')).addEventListener('change', (e) => { const v = parseFloat(e.target.value); P[key] = (v > 0 || v === 0) && e.target.value !== '' ? v : null; renderHealth(); }); };
   bind('#hIncome', 'incomeMonthly'); bind('#hHousing', 'housingMonthly'); bind('#hEmergency', 'emergencyFund');
   bind('#hRetire', 'retirementMonthly'); bind('#hDebtPay', 'debtPayMonthly'); bind('#hBalance', 'balance');
 }
@@ -517,7 +518,7 @@ function seedDemoProfile() {
     { name: 'Emergency fund', target: 5000, saved: 1200, deadline: null },
     { name: 'Car insurance (Dec)', target: 900, saved: 300, deadline: '2026-12' },
   ];
-  APP.profile.budgets = { 'Groceries': 650, 'Dining & Coffee': 250, 'Transport': 220, 'Shopping': 300, 'Subscriptions': 80, 'Utilities': 260 };
+  APP.profile.budgets = { 'Groceries': 650, 'Dining & Coffee': 250, 'Gas & Transit': 220, 'Shopping': 300, 'Subscriptions': 80, 'Utilities & Bills': 260 };
 }
 const _boot2 = boot;
 boot = function (txns, fileName, demo) {

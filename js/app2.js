@@ -14,11 +14,11 @@ function monthsSpanned(list) {
 }
 function avgMonthlyInflow(list) {
   const m = monthsSpanned(list);
-  return list.reduce((s, t) => s + (t.amount > 0 ? t.amount : 0), 0) / m;
+  return list.reduce((s, t) => s + (t.amount > 0 && !t.xfer ? t.amount : 0), 0) / m;
 }
 function avgMonthlyOutflow(list) {
   const m = monthsSpanned(list);
-  return list.reduce((s, t) => s + (t.amount < 0 ? -t.amount : 0), 0) / m;
+  return list.reduce((s, t) => s + (t.amount < 0 && !t.xfer ? -t.amount : 0), 0) / m;
 }
 function monthlyIncome() {
   if (APP.profile.incomeMonthly != null && APP.profile.incomeMonthly !== '') return +APP.profile.incomeMonthly || 0;
@@ -33,7 +33,7 @@ const fmt0 = (n) => '$' + Math.round(n).toLocaleString('en-US');
 
 /* ================= recurring detector (Rocket Money style) ================= */
 function detectRecurring(list) {
-  const out = list.filter((t) => t.amount < 0);
+  const out = list.filter((t) => t.amount < 0 && !t.xfer);
   const groups = {};
   for (const t of out) {
     const k = normalizePayee(t.desc);
@@ -131,7 +131,7 @@ function budgetActuals() {
   const list = withCats();
   const m = monthsSpanned(list);
   const byCat = {};
-  for (const t of list) if (t.amount < 0) byCat[t.cat] = (byCat[t.cat] || 0) + -t.amount;
+  for (const t of list) if (t.amount < 0 && !t.xfer) byCat[t.cat] = (byCat[t.cat] || 0) + -t.amount;
   const out = {};
   for (const [c, v] of Object.entries(byCat)) out[c] = v / m;
   return out;
@@ -408,7 +408,7 @@ function renderHealth() {
   const sc = scoreBuckets(h);
   const wasteCats = [
     { name: 'Dining & coffee', amt: h.actuals['Dining & Coffee'] || 0 },
-    { name: 'Food delivery', amt: withCats().filter((t) => t.amount < 0 && DELIVERY_RE.test(t.desc)).reduce((s, t) => s + -t.amount, 0) / monthsSpanned(withCats()) },
+    { name: 'Food delivery', amt: withCats().filter((t) => t.amount < 0 && !t.xfer && DELIVERY_RE.test(t.desc)).reduce((s, t) => s + -t.amount, 0) / monthsSpanned(withCats()) },
     { name: 'Subscriptions', amt: recurringMonthly() },
     { name: 'Shopping', amt: h.actuals['Shopping'] || 0 },
     { name: 'Fees & interest', amt: h.actuals['Fees & Interest'] || 0 },

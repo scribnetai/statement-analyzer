@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-09-27
+- Added top-left app-switcher dropdown on the brand mark: one-click jumps to every app in the suite (full index, this page marked).
 - Multi-file upload + Chase support: drop several CSVs at once (BoA card/checking, Chase credit card — `Transaction Date, Post Date, Description, Category, Type, Amount`). Each transaction is tagged with its bank, exact duplicates from overlapping downloads are removed, and card payments appearing in both a checking file and a card file are auto-paired as Transfers so totals aren't double-counted. Paired transfers are excluded from all spending metrics (dashboard totals, donut, monthly trend, top payees, findings, subscriptions, budget actuals, health score) — they're money movement, not spending. The Findings tab reports everything paired or removed.
 - Added a global date-range picker in the toolbar (All time / Last month / Last 3 months / Last 6 months / Year to date / Custom). Every tab filters to the selected range; the header shows the active range and how many transactions are in view. Resets on new file load and on Clear session.
 - QA fixes: bumped JS cache-busters (app.js?v=3, app2.js?v=2) after a stale-cache incident left the 5 new tabs blank; added the missing `fmt0` helper (Health tab); fixed `bind()` passing `#`-prefixed ids to `getElementById`; aligned category names with the app's category list.

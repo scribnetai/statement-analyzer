@@ -708,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
   $('clearBtn').addEventListener('click', clearSession);
-  $('brandHome').addEventListener('click', (e) => { e.preventDefault(); clearSession(); });
   // Nav anchor links (How it works / Privacy / FAQ) target sections inside
   // #landing. When the dashboard is open, #landing is hidden and the browser
   // can't scroll to a hidden target — so exit to the landing first, then jump

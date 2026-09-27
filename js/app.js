@@ -446,7 +446,7 @@ function computeFindings() {
   // Avg daily spend
   const dates = list.map((t) => t.date);
   if (dates.length > 1 && s.outflow > 0) {
-    const days = Math.max(1, Math.round((Math.max(...dates) - Math.min(...dates)) / 86400000) + 1;
+    const days = Math.max(1, Math.round((Math.max(...dates) - Math.min(...dates)) / 86400000)) + 1;
     push('📅', 'Daily run rate', `Averaging <strong>${fmt$(s.outflow / days)}/day</strong> in spending over ${days} days.`);
   }
 

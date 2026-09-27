@@ -709,6 +709,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
   $('clearBtn').addEventListener('click', clearSession);
   $('brandHome').addEventListener('click', (e) => { e.preventDefault(); clearSession(); });
+  // Nav anchor links (How it works / Privacy / FAQ) target sections inside
+  // #landing. When the dashboard is open, #landing is hidden and the browser
+  // can't scroll to a hidden target — so exit to the landing first, then jump
+  // (data stays in this tab's memory; nothing is cleared).
+  document.querySelectorAll('.nav-links a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href');
+      const target = href.length > 1 && document.querySelector(href);
+      if (!target) return; // external links (GitHub) behave normally
+      e.preventDefault();
+      if ($('landing').hidden) { $('dashboard').hidden = true; $('landing').hidden = false; }
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', href);
+    });
+  });
   $('flipBtn').addEventListener('click', () => {
     if (!APP.txns.length) return;
     APP.txns.forEach((t) => { t.amount = -t.amount; });

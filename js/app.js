@@ -223,6 +223,7 @@ function summarize(list) {
   let inflow = 0, outflow = 0;
   const byCat = {}, byMonth = {}, byPayee = {};
   for (const t of list) {
+    if (t.xfer) continue; // paired card payments are money movement, not spending — never double-count them
     if (t.amount > 0) inflow += t.amount; else outflow += -t.amount;
     byCat[t.cat] = (byCat[t.cat] || 0) + t.amount;
     const mk = monthKey(t.date);
@@ -348,7 +349,7 @@ function renderTransactions(filter = '', catFilter = '') {
 /* ================= findings ================= */
 function computeFindings() {
   const list = withCats();
-  const out = list.filter((t) => t.amount < 0);
+  const out = list.filter((t) => t.amount < 0 && !t.xfer);
   const F = [];
   const push = (icon, title, body) => F.push({ icon, title, body });
 

@@ -133,6 +133,19 @@
         <div id="dashMeta" class="muted small"></div>
       </div>
       <div class="toolbar-actions">
+        <span class="range-wrap" title="Filter every tab to a date range">
+          <label for="rangePreset">Range</label>
+          <select id="rangePreset" class="btn ghost small">
+            <option value="all">All time</option>
+            <option value="1m">Last month</option>
+            <option value="3m">Last 3 months</option>
+            <option value="6m">Last 6 months</option>
+            <option value="ytd">Year to date</option>
+            <option value="custom">Custom…</option>
+          </select>
+          <input type="date" id="rangeFrom" class="btn ghost small" hidden>
+          <input type="date" id="rangeTo" class="btn ghost small" hidden>
+        </span>
         <button id="flipBtn" class="btn ghost small" title="Invert the sign of all amounts">⇄ Flip amount signs</button>
         <button id="exportProfileBtn" class="btn ghost small" title="Download your budgets, debts, goals as a JSON file you keep">⬇ Profile</button>
         <button id="importProfileBtn" class="btn ghost small" title="Load a saved profile JSON">⬆ Profile</button>
@@ -167,6 +180,6 @@
 </main>
 
 <script src="js/app.js?v=3"></script>
-<script src="js/app2.js?v=2"></script>
+<script src="js/app2.js?v=3"></script>
 </body>
 </html>

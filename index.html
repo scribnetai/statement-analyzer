@@ -49,9 +49,9 @@
       <p class="muted">In Bank of America online banking: open the account, then <strong>Download transactions</strong> as <strong>CSV</strong>. Credit card and checking/savings exports both work.</p>
       <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Drop CSV statement file here">
         <div class="dz-icon">💳</div>
-        <div class="dz-title">Drag &amp; drop your <code>.csv</code> statement here</div>
-        <div class="dz-sub">or <span class="linklike">browse your files</span> — parsing starts instantly, locally</div>
-        <input type="file" id="fileInput" accept=".csv,.txt" hidden>
+        <div class="dz-title">Drag &amp; drop your <code>.csv</code> statement(s) here</div>
+        <div class="dz-sub">or <span class="linklike">browse your files</span> — one file or several, BoA and Chase both work. Parsing starts instantly, locally</div>
+        <input type="file" id="fileInput" accept=".csv,.txt" multiple hidden>
       </div>
       <div id="parseStatus" class="parse-status" hidden></div>
       <div id="fileError" class="file-error" hidden></div>
@@ -67,7 +67,7 @@
     <div class="wrap">
       <div class="step-head"><span class="step-num">2</span><h2>How it works</h2></div>
       <div class="cards3">
-        <div class="card"><h3>1️⃣ Export</h3><p>Download your statement as CSV from Bank of America. The parser auto-detects credit-card and checking formats — posted date, payee/description, amount.</p></div>
+        <div class="card"><h3>1️⃣ Export</h3><p>Download your statements as CSV from Bank of America or Chase — one file or several at once. The parser auto-detects each bank's format (card and checking), tags every transaction with its source, and pairs card payments across files so nothing is double-counted.</p></div>
         <div class="card"><h3>2️⃣ Analyze</h3><p>Transactions are categorized by keyword rules you can override per payee. The dashboard rolls up spending by category and month; the findings engine hunts for subscriptions, duplicates, spikes, and fees.</p></div>
         <div class="card"><h3>3️⃣ Brief</h3><p>Get plain-English money pointers and a downloadable standalone HTML report. Close the tab and every trace of your data is gone from the browser.</p></div>
       </div>
@@ -99,7 +99,8 @@
       <div class="step-head"><span class="step-num">4</span><h2>FAQ</h2></div>
       <details><summary>Is my statement uploaded anywhere?</summary><p>No. The file is read with the browser's FileReader API and parsed in memory. There is no server and no network request carrying your data — verify in devtools' network tab, or disconnect after the page loads.</p></details>
       <details><summary>Is anything stored in my browser?</summary><p>No. This app deliberately keeps nothing in localStorage — no autosave, no projects. Refresh or close the tab and everything is wiped. Download the HTML report if you want to keep the analysis.</p></details>
-      <details><summary>Which Bank of America formats are supported?</summary><p>Credit-card CSV exports (<code>Posted Date, Reference Number, Payee, Address, Amount</code>) and checking/savings exports (<code>Date, Description, Amount, Running Bal.</code>). The parser auto-detects the columns, and a generic fallback handles most other banks' CSVs with date/description/amount columns.</p></details>
+      <details><summary>Which banks and formats are supported?</summary><p>Bank of America credit-card exports (<code>Posted Date, Reference Number, Payee, Address, Amount</code>), BoA checking/savings exports (<code>Date, Description, Amount, Running Bal.</code>), and Chase credit-card exports (<code>Transaction Date, Post Date, Description, Category, Type, Amount</code>). The parser auto-detects the columns, and a generic fallback handles most other banks' CSVs with date/description/amount columns.</p></details>
+      <details><summary>Can I upload multiple files at once?</summary><p>Yes — select several CSVs (or drop them together) and they're merged into one view. Each transaction is tagged with its bank, exact duplicates from overlapping downloads are removed, and card payments that appear in both a checking file and a card file are auto-paired as Transfers so they aren't double-counted. The Findings tab reports everything it paired or removed.</p></details>
       <details><summary>The income/spending numbers look backwards. What gives?</summary><p>Banks aren't consistent about amount signs. If totals look inverted, hit <strong>Flip amount signs</strong> in the app toolbar — it re-runs the whole analysis with the opposite convention.</p></details>
       <details><summary>How does categorization work?</summary><p>Keyword rules map payees to categories (groceries, dining, subscriptions, …). Click any transaction's category to override it — the app remembers your choice for that payee for the rest of the session.</p></details>
       <details><summary>Can I share the results?</summary><p>Yes — the Report tab generates a standalone HTML file you can save or email. It's fully self-contained with no external dependencies, and contains only the analysis, which you control.</p></details>
@@ -179,7 +180,7 @@
   </div>
 </main>
 
-<script src="js/app.js?v=3"></script>
-<script src="js/app2.js?v=3"></script>
+<script src="js/app.js?v=4"></script>
+<script src="js/app2.js?v=4"></script>
 </body>
 </html>

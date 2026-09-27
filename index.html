@@ -103,6 +103,8 @@
       <details><summary>The income/spending numbers look backwards. What gives?</summary><p>Banks aren't consistent about amount signs. If totals look inverted, hit <strong>Flip amount signs</strong> in the app toolbar — it re-runs the whole analysis with the opposite convention.</p></details>
       <details><summary>How does categorization work?</summary><p>Keyword rules map payees to categories (groceries, dining, subscriptions, …). Click any transaction's category to override it — the app remembers your choice for that payee for the rest of the session.</p></details>
       <details><summary>Can I share the results?</summary><p>Yes — the Report tab generates a standalone HTML file you can save or email. It's fully self-contained with no external dependencies, and contains only the analysis, which you control.</p></details>
+      <details><summary>Where do my budgets, debts, and goals live?</summary><p>In the tab's memory, alongside your transactions — nothing is kept in browser storage. Use <strong>⬇ Profile</strong> in the toolbar to download them as a JSON file you keep wherever you like, and <strong>⬆ Profile</strong> to load them back later.</p></details>
+      <details><summary>Do the budgeting tools need my bank login?</summary><p>No. Everything is computed from the CSV you upload plus numbers you type in yourself (planned spending, debts, goals). That's the whole point — the paid apps this is modeled on need your credentials; this one never asks.</p></details>
     </div>
   </section>
 
@@ -132,7 +134,9 @@
       </div>
       <div class="toolbar-actions">
         <button id="flipBtn" class="btn ghost small" title="Invert the sign of all amounts">⇄ Flip amount signs</button>
-        <button id="demoBtn2" class="btn ghost small" hidden>🧪 Demo data</button>
+        <button id="exportProfileBtn" class="btn ghost small" title="Download your budgets, debts, goals as a JSON file you keep">⬇ Profile</button>
+        <button id="importProfileBtn" class="btn ghost small" title="Load a saved profile JSON">⬆ Profile</button>
+        <input type="file" id="profileInput" accept=".json" hidden>
         <button id="clearBtn" class="btn ghost small">✕ Clear session</button>
       </div>
     </div>
@@ -142,16 +146,27 @@
       <button data-tab="summary" class="active">Dashboard</button>
       <button data-tab="transactions">Transactions</button>
       <button data-tab="findings">Findings</button>
+      <button data-tab="subs">Subscriptions</button>
+      <button data-tab="budget">Budget</button>
+      <button data-tab="debts">Debts</button>
+      <button data-tab="goals">Goals</button>
+      <button data-tab="health">Health</button>
       <button data-tab="report">Report</button>
     </nav>
 
     <section class="tab-panel" id="panel-summary"></section>
     <section class="tab-panel" id="panel-transactions" hidden></section>
     <section class="tab-panel" id="panel-findings" hidden></section>
+    <section class="tab-panel" id="panel-subs" hidden></section>
+    <section class="tab-panel" id="panel-budget" hidden></section>
+    <section class="tab-panel" id="panel-debts" hidden></section>
+    <section class="tab-panel" id="panel-goals" hidden></section>
+    <section class="tab-panel" id="panel-health" hidden></section>
     <section class="tab-panel" id="panel-report" hidden></section>
   </div>
 </main>
 
 <script src="js/app.js?v=2"></script>
+<script src="js/app2.js?v=1"></script>
 </body>
 </html>

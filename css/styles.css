@@ -250,3 +250,10 @@ td.neg{color:#ff9d9d} td.pos{color:#7de8a8}
 .badge.bad{background:#3a1f1f;color:#ff6b6b}
 .debtchart{width:100%;height:auto;background:#141a28;border:1px solid var(--border2);border-radius:12px}
 .debtchart .trend-label{fill:#8a94a6;font-size:11px}
+
+/* ---- global date range (v2.1) ---- */
+.range-wrap{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:4px 8px}
+.range-wrap label{font-size:.75rem;color:var(--muted)}
+.range-wrap select,.range-wrap input[type="date"]{background:transparent;border:0;color:var(--text);font-family:var(--font);font-size:.8rem;padding:4px 2px;outline:none}
+.range-wrap select option{background:#1a2230}
+.range-wrap input[type="date"]{color-scheme:dark}

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statement Analyzer — Private, in-browser bank statement breakdown</title>
+<meta name="description" content="Drop a Bank of America CSV statement and get spending breakdowns, trends, and money findings. 100% in your browser — your data never leaves this tab.">
+<link rel="stylesheet" href="css/styles.css?v=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233ddc84'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>$</text></svg>">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#" id="brandHome">
+      <span class="brand-badge">$</span>
+      <span class="brand-name">Statement Analyzer</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/scribnetai/statement-analyzer" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ LANDING ============ -->
+<main id="landing">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <div class="pill">🔒 100% client-side &mdash; your statement never leaves this tab</div>
+      <h1>Turn a bank statement into a <span class="accent">money briefing.</span></h1>
+      <p class="lede">Drop your Bank of America CSV export and get spending breakdowns by category, month-over-month trends, recurring-charge detection, and plain-English findings &mdash; all computed in your browser. Nothing is uploaded, nothing is stored.</p>
+      <div class="trust-row">
+        <div class="trust"><span class="trust-icon">🛡️</span><div><strong>No upload.</strong><span>File never leaves your PC</span></div></div>
+        <div class="trust"><span class="trust-icon">🧠</span><div><strong>Memory only.</strong><span>Close the tab, it's gone</span></div></div>
+        <div class="trust"><span class="trust-icon">📴</span><div><strong>Works offline.</strong><span>Disconnect after load if you like</span></div></div>
+        <div class="trust"><span class="trust-icon">👤</span><div><strong>No account.</strong><span>Just open and analyze</span></div></div>
+      </div>
+      <a class="cta" href="#upload">Analyze a statement ↓</a>
+    </div>
+  </section>
+
+  <section id="upload" class="section">
+    <div class="wrap">
+      <div class="step-head"><span class="step-num">1</span><h2>Add your statement</h2></div>
+      <p class="muted">In Bank of America online banking: open the account, then <strong>Download transactions</strong> as <strong>CSV</strong>. Credit card and checking/savings exports both work.</p>
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Drop CSV statement file here">
+        <div class="dz-icon">💳</div>
+        <div class="dz-title">Drag &amp; drop your <code>.csv</code> statement here</div>
+        <div class="dz-sub">or <span class="linklike">browse your files</span> — parsing starts instantly, locally</div>
+        <input type="file" id="fileInput" accept=".csv,.txt" hidden>
+      </div>
+      <div id="parseStatus" class="parse-status" hidden></div>
+      <div id="fileError" class="file-error" hidden></div>
+      <div class="upload-alt">
+        <span class="muted">Don't want to use a real statement yet?</span>
+        <button id="demoBtn" class="btn ghost">Try it with demo data</button>
+        <span class="muted small">— realistic synthetic transactions, generated in your browser</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section">
+    <div class="wrap">
+      <div class="step-head"><span class="step-num">2</span><h2>How it works</h2></div>
+      <div class="cards3">
+        <div class="card"><h3>1️⃣ Export</h3><p>Download your statement as CSV from Bank of America. The parser auto-detects credit-card and checking formats — posted date, payee/description, amount.</p></div>
+        <div class="card"><h3>2️⃣ Analyze</h3><p>Transactions are categorized by keyword rules you can override per payee. The dashboard rolls up spending by category and month; the findings engine hunts for subscriptions, duplicates, spikes, and fees.</p></div>
+        <div class="card"><h3>3️⃣ Brief</h3><p>Get plain-English money pointers and a downloadable standalone HTML report. Close the tab and every trace of your data is gone from the browser.</p></div>
+      </div>
+      <table class="data mt">
+        <thead><tr><th>What it finds</th><th>Why you'd care</th></tr></thead>
+        <tbody>
+          <tr><td>Recurring charges</td><td>Same payee + same amount across months — your subscription footprint, with annualized cost</td></tr>
+          <tr><td>Possible duplicates</td><td>Same payee + amount within days of each other — double-charge check</td></tr>
+          <tr><td>Category breakdown</td><td>Where the money actually goes — dining vs groceries, etc.</td></tr>
+          <tr><td>Month-over-month trend</td><td>Is spending drifting up? By how much?</td></tr>
+          <tr><td>Fees &amp; interest</td><td>Surfaced separately so they can't hide in the noise</td></tr>
+          <tr><td>Unusual spikes</td><td>Charges far above a payee's normal — worth a glance</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="privacy" class="section">
+    <div class="wrap">
+      <div class="step-head"><span class="step-num">3</span><h2>Privacy, honestly</h2></div>
+      <p>This page is a static file. Your CSV is read with the browser's FileReader API and parsed in memory by JavaScript running in this tab. <strong>There is no server, no analytics on file contents, and no network request carrying your data</strong> — open devtools' network tab and verify, or disconnect from the internet after the page loads.</p>
+      <p>Unlike some tools on this page's sibling projects, this one keeps <strong>nothing</strong> in the browser: no localStorage, no autosave, no named projects. Close or refresh the tab and your transactions are gone. If you want to keep results, use the <strong>Report tab's HTML download</strong> — you choose where that file lives.</p>
+      <p class="muted small">Two honest caveats: GitHub (which hosts this page) can see that someone visited the URL, the same as any website — but never the contents of a file you drop into the tab. And anything on your own machine (browser extensions, corporate device management) is outside what a web page can control.</p>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="wrap">
+      <div class="step-head"><span class="step-num">4</span><h2>FAQ</h2></div>
+      <details><summary>Is my statement uploaded anywhere?</summary><p>No. The file is read with the browser's FileReader API and parsed in memory. There is no server and no network request carrying your data — verify in devtools' network tab, or disconnect after the page loads.</p></details>
+      <details><summary>Is anything stored in my browser?</summary><p>No. This app deliberately keeps nothing in localStorage — no autosave, no projects. Refresh or close the tab and everything is wiped. Download the HTML report if you want to keep the analysis.</p></details>
+      <details><summary>Which Bank of America formats are supported?</summary><p>Credit-card CSV exports (<code>Posted Date, Reference Number, Payee, Address, Amount</code>) and checking/savings exports (<code>Date, Description, Amount, Running Bal.</code>). The parser auto-detects the columns, and a generic fallback handles most other banks' CSVs with date/description/amount columns.</p></details>
+      <details><summary>The income/spending numbers look backwards. What gives?</summary><p>Banks aren't consistent about amount signs. If totals look inverted, hit <strong>Flip amount signs</strong> in the app toolbar — it re-runs the whole analysis with the opposite convention.</p></details>
+      <details><summary>How does categorization work?</summary><p>Keyword rules map payees to categories (groceries, dining, subscriptions, …). Click any transaction's category to override it — the app remembers your choice for that payee for the rest of the session.</p></details>
+      <details><summary>Can I share the results?</summary><p>Yes — the Report tab generates a standalone HTML file you can save or email. It's fully self-contained with no external dependencies, and contains only the analysis, which you control.</p></details>
+    </div>
+  </section>
+
+  <section id="changelog" class="section">
+    <div class="wrap">
+      <details class="changelog-details">
+        <summary class="step-head" style="cursor:pointer"><span class="step-num">📝</span><h2>Changelog</h2></summary>
+        <div id="changelog-body" class="changelog-body"><p class="muted">Loading…</p></div>
+      </details>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p class="muted small">Statement Analyzer — a static page. Your data never leaves this tab. <a href="https://github.com/scribnetai/statement-analyzer" target="_blank" rel="noopener">GitHub</a></p>
+    </div>
+  </footer>
+</main>
+
+<!-- ============ APP ============ -->
+<main id="dashboard" hidden>
+  <div class="wrap">
+    <div class="app-toolbar">
+      <div>
+        <div id="dashTitle" class="app-title">Statement analysis</div>
+        <div id="dashMeta" class="muted small"></div>
+      </div>
+      <div class="toolbar-actions">
+        <button id="flipBtn" class="btn ghost small" title="Invert the sign of all amounts">⇄ Flip amount signs</button>
+        <button id="demoBtn2" class="btn ghost small" hidden>🧪 Demo data</button>
+        <button id="clearBtn" class="btn ghost small">✕ Clear session</button>
+      </div>
+    </div>
+    <div id="demoBanner" class="demo-banner" hidden>🧪 Demo data — synthetic transactions generated in your browser. Nothing real here.</div>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="summary" class="active">Dashboard</button>
+      <button data-tab="transactions">Transactions</button>
+      <button data-tab="findings">Findings</button>
+      <button data-tab="report">Report</button>
+    </nav>
+
+    <section class="tab-panel" id="panel-summary"></section>
+    <section class="tab-panel" id="panel-transactions" hidden></section>
+    <section class="tab-panel" id="panel-findings" hidden></section>
+    <section class="tab-panel" id="panel-report" hidden></section>
+  </div>
+</main>
+
+<script src="js/app.js?v=1"></script>
+</body>
+</html>

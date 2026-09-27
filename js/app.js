@@ -41,7 +41,16 @@ function detectColumns(header) {
   let amt = find('amount');
   let debit = -1, credit = -1;
   if (amt < 0) { debit = find('withdrawal', 'debit', 'paid out'); credit = find('deposit', 'credit', 'paid in'); }
-  return { date, desc, amt, debit, credit };
+  const type = find('type');
+  return { date, desc, amt, debit, credit, type };
+}
+
+function detectBank(header) {
+  const h = header.map((x) => String(x).trim().toLowerCase());
+  const has = (...ns) => ns.every((n) => h.some((x) => x === n || x.includes(n)));
+  if (has('transaction date', 'post date')) return 'Chase';
+  if (has('reference number') || has('running bal')) return 'Bank of America';
+  return 'CSV';
 }
 
 function parseDate(s) {
@@ -71,6 +80,7 @@ function parseAmount(s) {
 function buildTransactions(rows) {
   if (!rows.length) return { error: 'The file looks empty.' };
   const cols = detectColumns(rows[0]);
+  const bank = detectBank(rows[0]);
   if (cols.date < 0 || cols.desc < 0 || (cols.amt < 0 && (cols.debit < 0 || cols.credit < 0))) {
     return { error: 'Could not find date, description, and amount columns. Detected headers: ' + rows[0].map(esc).join(', ') };
   }
@@ -86,11 +96,13 @@ function buildTransactions(rows) {
     }
     const desc = (r[cols.desc] || '').trim();
     if (!d || amt === null || !desc) continue;
-    txns.push({ date: d, desc, amount: amt });
+    const txn = { date: d, desc, amount: amt };
+    if (cols.type >= 0 && r[cols.type]) txn.type = String(r[cols.type]).trim();
+    txns.push(txn);
   }
   if (!txns.length) return { error: 'No usable transactions found — check that the CSV has date, description, and amount columns with data rows.' };
   txns.sort((a, b) => a.date - b.date);
-  return { txns, format: cols.amt >= 0 && /running/.test(rows[0].join(' ').toLowerCase()) ? 'checking' : (cols.debit >= 0 ? 'debit/credit' : 'card') };
+  return { txns, bank, format: cols.amt >= 0 && /running/.test(rows[0].join(' ').toLowerCase()) ? 'checking' : (cols.debit >= 0 ? 'debit/credit' : 'card') };
 }
 
 /* ================= categorization ================= */
@@ -133,7 +145,7 @@ function categorize(txn, overrides) {
 }
 
 /* ================= state ================= */
-const APP = { txns: [], overrides: {}, fileName: '', demo: false, format: '', flipped: false };
+const APP = { txns: [], overrides: {}, fileName: '', demo: false, format: '', flipped: false, mergeInfo: null };
 
 function withCats() {
   return APP.txns.map((t) => ({ ...t, cat: categorize(t, APP.overrides) }));
@@ -340,6 +352,15 @@ function computeFindings() {
   const F = [];
   const push = (icon, title, body) => F.push({ icon, title, body });
 
+  // Multi-file merge notes
+  if (APP.mergeInfo && APP.mergeInfo.files > 1) {
+    const mi = APP.mergeInfo;
+    const srcLine = mi.sources.map((s) => `${esc(s.bank)} (${s.count} txns)`).join(' + ');
+    if (mi.paired) push('🔗', 'Card payments paired across files', `Matched <strong>${mi.paired}</strong> card payment${mi.paired === 1 ? '' : 's'} appearing in both files and marked them as Transfers, so they aren't double-counted. Sources: ${srcLine}.`);
+    if (mi.dupes) push('🧹', 'Duplicate rows removed', `Dropped <strong>${mi.dupes}</strong> exact-duplicate row${mi.dupes === 1 ? '' : 's'} (same bank, date, payee, and amount — usually from overlapping downloads).`);
+    else push('📁', 'Multiple files merged', `Combined ${srcLine} into one view. Card payments found in both files are auto-paired as Transfers.`);
+  }
+
   // Recurring charges
   const groups = {};
   for (const t of out) {
@@ -531,6 +552,7 @@ function setStatus(msg, isError) {
 
 function boot(txns, fileName, demo) {
   APP.txns = txns; APP.overrides = {}; APP.fileName = fileName; APP.demo = !!demo; APP.flipped = false;
+  if (demo) APP.mergeInfo = null;
   $('demoBanner').hidden = !demo;
   $('landing').hidden = true;
   $('dashboard').hidden = false;
@@ -540,32 +562,106 @@ function boot(txns, fileName, demo) {
   setTimeout(() => { $('parseStatus').hidden = true; }, 5000);
 }
 
-function handleFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const rows = parseCSV(String(reader.result));
-      const res = buildTransactions(rows);
-      if (res.error) {
-        const fe = $('fileError');
-        fe.hidden = false;
-        fe.textContent = '⚠️ ' + res.error;
-        return;
-      }
-      $('fileError').hidden = true;
-      boot(res.txns, file.name, false);
-    } catch (err) {
-      const fe = $('fileError');
-      fe.hidden = false;
-      fe.textContent = '⚠️ Could not parse that file: ' + err.message;
+/* Pair card payments that appear in two files (e.g. -$250 AUTOPAY in checking,
+   +$250 Payment in the Chase card CSV) so they aren't double-counted.
+   Conservative: opposite signs, same |amount|, within 3 days, different banks,
+   and at least one side looks like a payment. Flags both as Transfers. */
+function pairTransfers(txns) {
+  const PAY_RE = /payment|autopay|thank you|credit card|cardmember|online payment/i;
+  let paired = 0;
+  for (let i = 0; i < txns.length; i++) {
+    const a = txns[i];
+    if (a.xfer || !a.amount) continue;
+    for (let j = i + 1; j < txns.length; j++) {
+      const b = txns[j];
+      if (b.xfer || !b.amount || a.source === b.source) continue;
+      if ((a.amount > 0) === (b.amount > 0)) continue;
+      if (Math.abs(Math.abs(a.amount) - Math.abs(b.amount)) > 0.01) continue;
+      if (Math.abs(a.date - b.date) > 3 * 86400000) continue;
+      const looksPay = PAY_RE.test(a.desc) || PAY_RE.test(b.desc) ||
+        (a.type && /payment/i.test(a.type)) || (b.type && /payment/i.test(b.type));
+      if (!looksPay) continue;
+      a.xfer = true; b.xfer = true; paired++;
+      break;
     }
-  };
-  reader.readAsText(file);
+  }
+  return paired;
+}
+
+function handleFiles(fileList) {
+  const all = Array.from(fileList || []);
+  const files = all.filter((f) => f && /\.(csv|txt)$/i.test(f.name));
+  const fe = $('fileError');
+  if (!files.length) {
+    if (all.length) { fe.hidden = false; fe.textContent = '⚠️ No usable CSV files in that drop — export your statement as CSV and try again.'; }
+    return;
+  }
+  fe.hidden = true;
+  setStatus(`⏳ Reading ${files.length} file${files.length === 1 ? '' : 's'}…`, false);
+  const results = [];
+  let pending = files.length;
+  files.forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const res = buildTransactions(parseCSV(String(reader.result)));
+        results.push({ file, res, error: res.error || null });
+      } catch (err) {
+        results.push({ file, res: null, error: 'Could not parse that file: ' + err.message });
+      }
+      if (--pending === 0) mergeAndBoot(files, results);
+    };
+    reader.onerror = () => {
+      results.push({ file, res: null, error: 'Could not read that file.' });
+      if (--pending === 0) mergeAndBoot(files, results);
+    };
+    reader.readAsText(file);
+  });
+}
+
+function mergeAndBoot(files, results) {
+  const bad = results.filter((r) => r.error);
+  const good = results.filter((r) => !r.error);
+  const fe = $('fileError');
+  if (bad.length) {
+    fe.hidden = false;
+    fe.textContent = '⚠️ ' + bad.map((r) => r.file.name + ': ' + r.error).join(' · ');
+    if (!good.length) return;
+  }
+  let merged = [], dupes = 0;
+  const seen = new Set();
+  const sources = [];
+  for (const r of good) {
+    const bank = r.res.bank || 'CSV';
+    sources.push({ name: r.file.name, bank, count: r.res.txns.length });
+    for (const t of r.res.txns) {
+      t.source = bank;
+      const k = bank + '|' + t.date.getTime() + '|' + normalizePayee(t.desc) + '|' + t.amount.toFixed(2);
+      if (seen.has(k)) { dupes++; continue; }
+      seen.add(k);
+      merged.push(t);
+    }
+  }
+  if (!merged.length) {
+    fe.hidden = false;
+    fe.textContent = '⚠️ No usable transactions found in those files.';
+    return;
+  }
+  merged.sort((a, b) => a.date - b.date);
+  const paired = pairTransfers(merged);
+  APP.mergeInfo = { sources, dupes, paired, files: files.length };
+  const banks = sources.map((s) => s.bank).filter((v, i, a) => a.indexOf(v) === i);
+  const label = files.length === 1 ? files[0].name : banks.join(' + ') + ` (${merged.length} txns, ${files.length} files)`;
+  boot(merged, label, false);
+  const bits = [];
+  if (paired) bits.push(`${paired} transfer${paired === 1 ? '' : 's'} paired`);
+  if (dupes) bits.push(`${dupes} duplicate${dupes === 1 ? '' : 's'} removed`);
+  setStatus(`✅ ${merged.length} transactions from ${files.length} file${files.length === 1 ? '' : 's'}${bits.length ? ' — ' + bits.join(', ') : ''}.`, false);
+  setTimeout(() => { $('parseStatus').hidden = true; }, 5000);
 }
 
 function clearSession() {
-  APP.txns = []; APP.overrides = {}; APP.fileName = ''; APP.demo = false; APP.flipped = false;
+  APP.txns = []; APP.overrides = {}; APP.fileName = ''; APP.demo = false; APP.flipped = false; APP.mergeInfo = null;
   $('fileInput').value = '';
   $('dashboard').hidden = true;
   $('landing').hidden = false;
@@ -602,10 +698,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const dz = $('dropzone'), fi = $('fileInput');
   dz.addEventListener('click', () => fi.click());
   dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fi.click(); });
-  fi.addEventListener('change', () => handleFile(fi.files[0]));
+  fi.addEventListener('change', () => handleFiles(fi.files));
   ['dragover', 'dragenter'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('drag'); }));
   ['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('drag'); }));
-  dz.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
+  dz.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
 
   $('demoBtn').addEventListener('click', () => boot(genDemoData(), 'demo-data.csv', true));
 

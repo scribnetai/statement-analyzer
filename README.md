@@ -14,6 +14,17 @@ Live at https://scribnetai.github.io/statement-analyzer/
 
 If totals look inverted, use **Flip amount signs** in the toolbar.
 
+## Budgeting toolkit
+
+Modeled on the mechanics of paid apps (Rocket Money, EveryDollar, YNAB, Monarch, Simplifi, PocketGuard, Caleb Hammer's audit framework) — all computed client-side from your CSV plus numbers you type in:
+
+- **Subscriptions** — recurring-charge detector (monthly/weekly/annual cadences, confidence tiers), price-increase alerts, predicted renewals, cancel/keep planner with annualized savings.
+- **Budget** — zero-based worksheet (planned vs actual, left-to-budget) plus a safe-to-spend number.
+- **Debts** — snowball vs avalanche payoff simulator with payoff dates, total interest, debt-free date.
+- **Goals** — savings targets and sinking funds with required monthly set-aside.
+- **Health** — 5-bucket financial score, guardrail checks, waste audit, buffer-days metric, ranked margin finder.
+- **Profile export/import** — budgets, debts, and goals download as a JSON file *you* keep; nothing is stored in the browser.
+
 ## Developing
 
 Static site — open `index.html` or serve the folder. No build step, no dependencies. Bump the `?v=` cache-buster on CSS/JS includes when redeploying fixes.

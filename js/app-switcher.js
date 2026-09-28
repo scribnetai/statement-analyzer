@@ -2,17 +2,17 @@
    The menu renders from the APPS array below: one place to edit when apps are added.
    (Statement Analyzer is intentionally listed only on its own page.) */
 const APPS = [
-  { name: "SE Command Center", glyph: "🎛️", url: "https://scribnetai.github.io/se-command-center/" },
-  { name: "Server Sizer", glyph: "🖥️", url: "https://scribnetai.github.io/server-sizer/" },
-  { name: "Storage Sizer", glyph: "💾", url: "https://scribnetai.github.io/storage-sizer/" },
-  { name: "Network Sizer", glyph: "🌐", url: "https://scribnetai.github.io/network-sizer/" },
-  { name: "RVTools Analyzer", glyph: "🔍", url: "https://scribnetai.github.io/rvtools-analyzer/" },
-  { name: "Deal Pack", glyph: "🤝", url: "https://scribnetai.github.io/deal-pack/" },
-  { name: "Battlecards", glyph: "⚔️", url: "https://scribnetai.github.io/battlecards/" },
-  { name: "TCO Calculator", glyph: "🧮", url: "https://scribnetai.github.io/tco-calculator/" },
-  { name: "Cargo Foundry", glyph: "🏭", url: "https://scribnetai.github.io/cargo-foundry/" },
+  { name: "SE Command Center", glyph: "🎛️", url: "https://se-command-center.scribnet.io/" },
+  { name: "Server Sizer", glyph: "🖥️", url: "https://server-sizer.scribnet.io/" },
+  { name: "Storage Sizer", glyph: "💾", url: "https://storage-sizer.scribnet.io/" },
+  { name: "Network Sizer", glyph: "🌐", url: "https://network-sizer.scribnet.io/" },
+  { name: "RVTools Analyzer", glyph: "🔍", url: "https://rvtools-analyzer.scribnet.io/" },
+  { name: "Deal Pack", glyph: "🤝", url: "https://deal-pack.scribnet.io/" },
+  { name: "Battlecards", glyph: "⚔️", url: "https://battlecards.scribnet.io/" },
+  { name: "TCO Calculator", glyph: "🧮", url: "https://tco-calculator.scribnet.io/" },
+  { name: "Cargo Foundry", glyph: "🏭", url: "https://cargo-foundry.scribnet.io/" },
   { name: "scribnet.io", glyph: "🏠", url: "https://scribnet.io/" },
-  { name: "Statement Analyzer", glyph: "🧾", url: "https://scribnetai.github.io/statement-analyzer/" },
+  { name: "Statement Analyzer", glyph: "🧾", url: "https://statement-analyzer.scribnet.io/" },
 ];
 
 /* What the "this page" item does: same as the old brand click — wipe the session. */

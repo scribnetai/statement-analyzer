@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-28
+- TLS certificate provisioned for the `statement-analyzer.scribnet.io` custom domain (GitHub's stuck DNS check was reset 2026-09-28); HTTPS is now enforced on the site. App-switcher menu links switched from legacy `scribnetai.github.io` URLs to direct `https://<app>.scribnet.io` URLs for all 10 apps (footer/launcher links updated likewise). This entry also covers the net-zero CNAME delete/re-add commits from the DNS-check reset, which carried no changelog entries. Touched: index.html, js/app-switcher.js.
+
+
 ## 2026-09-27
 - Added top-left app-switcher dropdown on the brand mark: one-click jumps to every app in the suite (full index, this page marked).
 - Multi-file upload + Chase support: drop several CSVs at once (BoA card/checking, Chase credit card — `Transaction Date, Post Date, Description, Category, Type, Amount`). Each transaction is tagged with its bank, exact duplicates from overlapping downloads are removed, and card payments appearing in both a checking file and a card file are auto-paired as Transfers so totals aren't double-counted. Paired transfers are excluded from all spending metrics (dashboard totals, donut, monthly trend, top payees, findings, subscriptions, budget actuals, health score) — they're money movement, not spending. The Findings tab reports everything paired or removed.

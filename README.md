@@ -4,7 +4,7 @@
 
 **Privacy:** your statement is read with the browser's FileReader API and parsed in memory. There is no server, no analytics on file contents, and no network request carrying your data. Nothing is kept in localStorage — close or refresh the tab and it's gone. Download the HTML report if you want to keep results.
 
-Live at https://scribnetai.github.io/statement-analyzer/
+Live at https://statement-analyzer.scribnet.io/
 
 ## Supported formats
 

@@ -6,6 +6,7 @@
 - **Cash-flow forecast (new Forecast tab):** projects detected recurring income and charges 30/60/90 days past the last transaction, with an optional historical everyday-spending pace layered in; shows projected end balance, low point + date with thin-buffer/negative warnings, maximum sustainable daily pace, a balance chart, and the upcoming recurring-events list. Starting balance comes from your input, else the statement's last running balance.
 - **Profile v2:** exports now also include per-payee category overrides, rules, and custom categories (v1 files still import).
 - Also fixed a pre-existing live bug found in testing: Profile import called an undefined `msg()` helper — the import applied but threw an error and never showed its confirmation. The helper now exists.
+- Follow-up fix (same day, from live browser QA): split dialog amount fields now always render rounded to cents — an automated QA pass caught a raw floating-point value (15.869999…) in a pre-filled field. app3.js v2.
 - Cache-busters: app.js v8, app2.js v6, new app3.js v1.
 
 ## 2026-09-28 — Canonical subdomain links

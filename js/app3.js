@@ -106,7 +106,8 @@ function ensureSplitDialog() {
 }
 let splitTargetId = null;
 function splitRowHTML(amount, cat) {
-  return `<div class="split-row"><input type="number" step="0.01" min="0" class="input small split-amt" value="${amount != null ? amount : ''}" placeholder="Amount">
+  const v = (amount === '' || amount == null || isNaN(parseFloat(amount))) ? '' : (Math.round(parseFloat(amount) * 100) / 100).toFixed(2);
+  return `<div class="split-row"><input type="number" step="0.01" min="0" class="input small split-amt" value="${v}" placeholder="Amount">
     <select class="input small split-cat">${allCats().map((c) => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
     <button type="button" class="btn ghost small split-del" title="Remove part">✕</button></div>`;
 }

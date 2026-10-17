@@ -46,7 +46,7 @@
     <div class="hero-inner">
       <div class="pill">🔒 100% client-side &mdash; your statement never leaves this tab</div>
       <h1>Turn a bank statement into a <span class="accent">money briefing.</span></h1>
-      <p class="lede">Drop your Bank of America CSV export and get spending breakdowns by category, month-over-month trends, recurring-charge detection, and plain-English findings &mdash; all computed in your browser. Nothing is uploaded, nothing is stored.</p>
+      <p class="lede">Drop a statement from almost any bank &mdash; CSV, OFX/QFX, PDF, or Excel &mdash; and get spending breakdowns by category, month-over-month trends, recurring-charge detection, a cash-flow forecast, and plain-English findings &mdash; all computed in your browser. Nothing is uploaded, nothing is stored.</p>
       <div class="trust-row">
         <div class="trust"><span class="trust-icon">🛡️</span><div><strong>No upload.</strong><span>File never leaves your PC</span></div></div>
         <div class="trust"><span class="trust-icon">🧠</span><div><strong>Memory only.</strong><span>Close the tab, it's gone</span></div></div>
@@ -60,12 +60,12 @@
   <section id="upload" class="section">
     <div class="wrap">
       <div class="step-head"><span class="step-num">1</span><h2>Add your statement</h2></div>
-      <p class="muted">In Bank of America online banking: open the account, then <strong>Download transactions</strong> as <strong>CSV</strong>. Credit card and checking/savings exports both work.</p>
+      <p class="muted">In your bank's online banking, download transactions as <strong>CSV</strong>, <strong>OFX/QFX</strong>, or <strong>Excel</strong> — or drop the <strong>PDF statement</strong> itself. BoA, Chase, Amex, Citi, Capital One, Wells Fargo, Discover, and most credit-union exports are detected automatically.</p>
       <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Drop CSV statement file here">
         <div class="dz-icon">💳</div>
-        <div class="dz-title">Drag &amp; drop your <code>.csv</code> statement(s) here</div>
-        <div class="dz-sub">or <span class="linklike">browse your files</span> — one file or several, BoA and Chase both work. Parsing starts instantly, locally</div>
-        <input type="file" id="fileInput" accept=".csv,.txt" multiple hidden>
+        <div class="dz-title">Drag &amp; drop your statement(s) here</div>
+        <div class="dz-sub">or <span class="linklike">browse your files</span> — <code>.csv</code> · <code>.ofx</code>/<code>.qfx</code> · <code>.pdf</code> · <code>.xlsx</code>, one file or several at once. Parsing starts instantly, locally</div>
+        <input type="file" id="fileInput" accept=".csv,.txt,.ofx,.qfx,.qbo,.pdf,.xlsx,.xls" multiple hidden>
       </div>
       <div id="parseStatus" class="parse-status" hidden></div>
       <div id="fileError" class="file-error" hidden></div>
@@ -81,9 +81,9 @@
     <div class="wrap">
       <div class="step-head"><span class="step-num">2</span><h2>How it works</h2></div>
       <div class="cards3">
-        <div class="card"><h3>1️⃣ Export</h3><p>Download your statements as CSV from Bank of America or Chase — one file or several at once. The parser auto-detects each bank's format (card and checking), tags every transaction with its source, and pairs card payments across files so nothing is double-counted.</p></div>
-        <div class="card"><h3>2️⃣ Analyze</h3><p>Transactions are categorized by keyword rules you can override per payee. The dashboard rolls up spending by category and month; the findings engine hunts for subscriptions, duplicates, spikes, and fees.</p></div>
-        <div class="card"><h3>3️⃣ Brief</h3><p>Get plain-English money pointers and a downloadable standalone HTML report. Close the tab and every trace of your data is gone from the browser.</p></div>
+        <div class="card"><h3>1️⃣ Export</h3><p>Download statements as CSV, OFX/QFX, or Excel — or drop the PDF statement itself — from BoA, Chase, Amex, Citi, Capital One, Wells Fargo, Discover, and most other banks. The parser auto-detects each bank's format, tags every transaction with its source, and pairs card payments across files so nothing is double-counted.</p></div>
+        <div class="card"><h3>2️⃣ Analyze &amp; clean up</h3><p>Transactions are categorized by keyword rules you can override per payee — plus your own rules engine, custom categories, transaction splits, and a review queue in the Cleanup tab. Messy bank payee strings are cleaned up for display and grouping. The findings engine hunts for subscriptions, duplicates, spikes, and fees.</p></div>
+        <div class="card"><h3>3️⃣ Brief &amp; forecast</h3><p>Get plain-English money pointers, a cash-flow forecast projecting your recurring income and bills 30–90 days out (with low-point warnings), and a downloadable standalone HTML report. Close the tab and every trace of your data is gone from the browser.</p></div>
       </div>
       <table class="data mt">
         <thead><tr><th>What it finds</th><th>Why you'd care</th></tr></thead>
@@ -113,10 +113,12 @@
       <div class="step-head"><span class="step-num">4</span><h2>FAQ</h2></div>
       <details><summary>Is my statement uploaded anywhere?</summary><p>No. The file is read with the browser's FileReader API and parsed in memory. There is no server and no network request carrying your data — verify in devtools' network tab, or disconnect after the page loads.</p></details>
       <details><summary>Is anything stored in my browser?</summary><p>No. This app deliberately keeps nothing in localStorage — no autosave, no projects. Refresh or close the tab and everything is wiped. Download the HTML report if you want to keep the analysis.</p></details>
-      <details><summary>Which banks and formats are supported?</summary><p>Bank of America credit-card exports (<code>Posted Date, Reference Number, Payee, Address, Amount</code>), BoA checking/savings exports (<code>Date, Description, Amount, Running Bal.</code>), and Chase credit-card exports (<code>Transaction Date, Post Date, Description, Category, Type, Amount</code>). The parser auto-detects the columns, and a generic fallback handles most other banks' CSVs with date/description/amount columns.</p></details>
+      <details><summary>Which banks and formats are supported?</summary><p>Formats: <strong>CSV</strong>, <strong>OFX/QFX/QBO</strong> (the Quicken/Money export most banks offer — exact, and recommended when available), <strong>Excel (.xlsx)</strong>, and <strong>PDF statements</strong> (best-effort text extraction — works on text-based PDFs; scanned-image PDFs have no text to read). Banks detected by name include Bank of America, Chase, American Express, Citi, Capital One, Wells Fargo, Discover, Fidelity, USAA, U.S. Bank, TD, PNC, and Truist, plus a generic fallback for any CSV with date/description/amount (or separate debit/credit) columns. PDF/Excel imports load their parser library as code from a CDN on first use — your statement data itself is still parsed locally and never sent anywhere.</p></details>
+      <details><summary>What are rules, and how is that different from changing a category?</summary><p>Changing a category on the Transactions tab remembers that exact payee. A <strong>rule</strong> (Cleanup tab) matches any payee <em>containing</em> your text, optionally only above/below an amount — so "SHELL under $20 → Dining" catches gas-station snacks while "SHELL" alone stays Gas. Rules, custom categories, and per-payee overrides are all saved in Profile v2 exports (⬇ Profile in the toolbar).</p></details>
+      <details><summary>How does the cash-flow forecast work?</summary><p>The Forecast tab detects recurring deposits and charges (same merchant, regular cadence, 2+ occurrences) and projects them 30, 60, or 90 days past your last transaction, optionally layering your historical everyday-spending pace on top. It shows the projected low point, the maximum sustainable daily pace, and upcoming events. Enter your current balance for an accurate level — otherwise it seeds from the statement's last running balance when one was included.</p></details>
       <details><summary>Can I upload multiple files at once?</summary><p>Yes — select several CSVs (or drop them together) and they're merged into one view. Each transaction is tagged with its bank, exact duplicates from overlapping downloads are removed, and card payments that appear in both a checking file and a card file are auto-paired as Transfers so they aren't double-counted. The Findings tab reports everything it paired or removed.</p></details>
       <details><summary>The income/spending numbers look backwards. What gives?</summary><p>Banks aren't consistent about amount signs. If totals look inverted, hit <strong>Flip amount signs</strong> in the app toolbar — it re-runs the whole analysis with the opposite convention.</p></details>
-      <details><summary>How does categorization work?</summary><p>Keyword rules map payees to categories (groceries, dining, subscriptions, …). Click any transaction's category to override it — the app remembers your choice for that payee for the rest of the session.</p></details>
+      <details><summary>How does categorization work?</summary><p>In order: your per-payee overrides, your own rules (Cleanup tab), splits you defined, then built-in keyword rules map payees to categories (groceries, dining, subscriptions, …). Click any transaction's category to override it, use the Cleanup tab's review queue to clear out everything still in "Other" in bulk, and add custom categories for your own buckets.</p></details>
       <details><summary>Can I share the results?</summary><p>Yes — the Report tab generates a standalone HTML file you can save or email. It's fully self-contained with no external dependencies, and contains only the analysis, which you control.</p></details>
       <details><summary>Where do my budgets, debts, and goals live?</summary><p>In the tab's memory, alongside your transactions — nothing is kept in browser storage. Use <strong>⬇ Profile</strong> in the toolbar to download them as a JSON file you keep wherever you like, and <strong>⬆ Profile</strong> to load them back later.</p></details>
       <details><summary>Do the budgeting tools need my bank login?</summary><p>No. Everything is computed from the CSV you upload plus numbers you type in yourself (planned spending, debts, goals). That's the whole point — the paid apps this is modeled on need your credentials; this one never asks.</p></details>
@@ -173,6 +175,8 @@
     <nav class="tabs" id="tabs">
       <button data-tab="summary" class="active">Dashboard</button>
       <button data-tab="transactions">Transactions</button>
+      <button data-tab="cleanup">Cleanup</button>
+      <button data-tab="forecast">Forecast</button>
       <button data-tab="findings">Findings</button>
       <button data-tab="subs">Subscriptions</button>
       <button data-tab="budget">Budget</button>
@@ -184,6 +188,8 @@
 
     <section class="tab-panel" id="panel-summary"></section>
     <section class="tab-panel" id="panel-transactions" hidden></section>
+    <section class="tab-panel" id="panel-cleanup" hidden></section>
+    <section class="tab-panel" id="panel-forecast" hidden></section>
     <section class="tab-panel" id="panel-findings" hidden></section>
     <section class="tab-panel" id="panel-subs" hidden></section>
     <section class="tab-panel" id="panel-budget" hidden></section>
@@ -195,8 +201,9 @@
 </main>
 
 <script src="js/app-switcher.js?v=2"></script>
-<script src="js/app.js?v=7"></script>
-<script src="js/app2.js?v=5"></script>
+<script src="js/app.js?v=8"></script>
+<script src="js/app2.js?v=6"></script>
+<script src="js/app3.js?v=1"></script>
 <!-- ScribNet feedback widget: floating button + dialog, sends via user's email client (mailto). Self-contained: no external deps, no reliance on page CSS. -->
 <style>
 .snkf-btn{position:fixed;right:22px;bottom:22px;z-index:9990;display:flex;align-items:center;gap:9px;

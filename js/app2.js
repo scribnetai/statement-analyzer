@@ -4,7 +4,7 @@
 
 /* ================= profile ================= */
 function blankProfile() {
-  return { budgets: {}, debts: [], goals: [], subMarks: {}, incomeMonthly: null, balance: null, housingMonthly: null, emergencyFund: null, retirementMonthly: null, debtPayMonthly: null };
+  return { budgets: {}, debts: [], goals: [], subMarks: {}, incomeMonthly: null, balance: null, housingMonthly: null, emergencyFund: null, retirementMonthly: null, debtPayMonthly: null, rules: [], customCats: [], forecastStart: null, forecastHorizon: 90, forecastIncludeDiscretionary: true };
 }
 APP.profile = blankProfile();
 
@@ -482,8 +482,9 @@ function renderHealth() {
 TAB_RENDERERS.health = renderHealth;
 
 /* ================= profile export / import ================= */
+function msg(el, text, kind) { if (!el) return; el.textContent = text; el.className = 'msg ' + (kind || ''); }
 function exportProfile() {
-  const blob = new Blob([JSON.stringify({ app: 'statement-analyzer', version: 1, exported: new Date().toISOString(), profile: APP.profile }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ app: 'statement-analyzer', version: 2, exported: new Date().toISOString(), profile: APP.profile, overrides: APP.overrides || {} }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'statement-analyzer-profile.json';
@@ -499,7 +500,9 @@ function importProfile(file) {
       if (!p || typeof p !== 'object' || !('budgets' in p)) throw new Error('bad file');
       const fresh = blankProfile();
       APP.profile = Object.assign(fresh, p);
-      msg($('profileMsg'), 'Profile loaded — budgets, debts, goals restored.', 'ok');
+      if (data.overrides && typeof data.overrides === 'object') APP.overrides = data.overrides;
+      if (Array.isArray(APP.profile.customCats) && typeof registerCustomCats === 'function') registerCustomCats(APP.profile.customCats);
+      msg($('profileMsg'), 'Profile loaded — budgets, debts, goals, rules, custom categories, and category overrides restored.', 'ok');
       switchTab('budget');
     } catch (e) { msg($('profileMsg'), 'That file is not a statement-analyzer profile.', 'err'); }
   };

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-17
+- **Rules + merchant cleanup engine (new Cleanup tab):** reusable categorization rules (payee-contains match with optional amount above/below conditions, run in order after manual overrides and before built-in keywords), custom categories (usable in every picker, the Budget tab, and exports), transaction splits (✂ Split in Transactions — divide one charge across categories with sum validation), a bulk review queue that clears everything still in "Other" payee-by-payee, and merchant-name cleanup (processor prefixes like SQ */TST*/PAYPAL *, store numbers, and city/state/ZIP tails stripped for display and grouping; raw strings untouched).
+- **Real-world imports:** OFX/QFX/QBO files now parse natively; PDF statements import via pdf.js (text-layer extraction with running-balance capture, honest error for scanned-image PDFs); Excel .xlsx imports via SheetJS. Bank detection extended beyond BoA/Chase to American Express, Citi, Capital One, Wells Fargo, Discover, Fidelity, USAA, U.S. Bank, TD, PNC, Truist, and credit-union debit/credit-column CSVs. Running-balance columns are now captured and used. Import libraries load lazily as code only — statement data is still parsed entirely in the tab.
+- **Cash-flow forecast (new Forecast tab):** projects detected recurring income and charges 30/60/90 days past the last transaction, with an optional historical everyday-spending pace layered in; shows projected end balance, low point + date with thin-buffer/negative warnings, maximum sustainable daily pace, a balance chart, and the upcoming recurring-events list. Starting balance comes from your input, else the statement's last running balance.
+- **Profile v2:** exports now also include per-payee category overrides, rules, and custom categories (v1 files still import).
+- Also fixed a pre-existing live bug found in testing: Profile import called an undefined `msg()` helper — the import applied but threw an error and never showed its confirmation. The helper now exists.
+- Cache-busters: app.js v8, app2.js v6, new app3.js v1.
+
 ## 2026-09-28 — Canonical subdomain links
 - Replaced legacy `scribnetai.github.io/<repo>/` links with canonical
   `https://<repo>.scribnet.io/` URLs (the old URLs 301-redirect, but docs and

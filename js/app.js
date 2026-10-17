@@ -35,21 +35,38 @@ function detectColumns(header) {
     for (const n of names) { const i = H.findIndex((h) => h === n || h.includes(n)); if (i >= 0) return i; }
     return -1;
   };
-  let date = find('posted date', 'post date', 'transaction date', 'trans date');
+  let date = find('posted date', 'post date', 'transaction date', 'trans date', 'posting date');
   if (date < 0) date = H.findIndex((h) => h === 'date');
-  const desc = find('payee', 'description', 'merchant', 'memo', 'transaction description', 'name');
-  let amt = find('amount');
-  let debit = -1, credit = -1;
-  if (amt < 0) { debit = find('withdrawal', 'debit', 'paid out'); credit = find('deposit', 'credit', 'paid in'); }
-  const type = find('type');
-  return { date, desc, amt, debit, credit, type };
+  const desc = find('payee', 'description', 'merchant', 'memo', 'transaction description', 'transaction description', 'name', 'details');
+  // A separate debit/credit column pair (Wells Fargo, credit unions) must win over the
+  // generic 'amount' search — 'Withdrawal Amount' itself contains the word 'amount'.
+  let debit = find('withdrawal amount', 'debit amount', 'withdrawals', 'withdrawal', 'paid out', 'money out');
+  let credit = find('deposit amount', 'credit amount', 'deposits', 'deposit', 'paid in', 'money in');
+  if (debit < 0 || credit < 0 || debit === credit) { debit = -1; credit = -1; }
+  let amt = debit >= 0 ? -1 : find('amount');
+  const type = find('type', 'transaction type');
+  const balance = find('running bal', 'balance');
+  return { date, desc, amt, debit, credit, type, balance };
 }
 
 function detectBank(header) {
   const h = header.map((x) => String(x).trim().toLowerCase());
   const has = (...ns) => ns.every((n) => h.some((x) => x === n || x.includes(n)));
+  const any = (...ns) => ns.some((n) => h.some((x) => x === n || x.includes(n)));
   if (has('transaction date', 'post date')) return 'Chase';
   if (has('reference number') || has('running bal')) return 'Bank of America';
+  if (any('card member', 'account #') && has('transaction date', 'description', 'amount')) return 'American Express';
+  if (has('post date', 'description', 'debit', 'credit') || any('citi')) return 'Citi';
+  if (any('capital one') || has('transaction date', 'posted date', 'card no')) return 'Capital One';
+  if (any('wells fargo') || has('posting date', 'description', 'withdrawal amount', 'deposit amount')) return 'Wells Fargo';
+  if (any('discover') || has('trans. date', 'post date', 'description', 'amount', 'category')) return 'Discover';
+  if (any('fidelity') || has('run date', 'action', 'symbol', 'quantity')) return 'Fidelity';
+  if (any('usaa')) return 'USAA';
+  if (any('u.s. bank', 'us bank')) return 'U.S. Bank';
+  if (any('td bank') || any('td card')) return 'TD Bank';
+  if (any('pnc')) return 'PNC';
+  if (any('truist')) return 'Truist';
+  if (has('date', 'description', 'debit', 'credit')) return 'Credit Union / Other';
   return 'CSV';
 }
 
@@ -97,6 +114,7 @@ function buildTransactions(rows) {
     const desc = (r[cols.desc] || '').trim();
     if (!d || amt === null || !desc) continue;
     const txn = { date: d, desc, amount: amt };
+    if (cols.balance >= 0) { const bal = parseAmount(r[cols.balance] || ''); if (bal !== null) txn.balance = bal; }
     if (cols.type >= 0 && r[cols.type]) txn.type = String(r[cols.type]).trim();
     txns.push(txn);
   }
@@ -304,7 +322,7 @@ function renderSummary() {
     </div>
     <div class="panel-card mt"><h3>Top payees (by spend)</h3>
       <table class="data"><thead><tr><th>Payee</th><th>Transactions</th><th style="text-align:right">Total</th></tr></thead>
-      <tbody>${topPayees.map((p) => `<tr><td>${esc(p.desc)}</td><td>${p.count}</td><td style="text-align:right">${fmt$(p.total)}</td></tr>`).join('')}</tbody></table>
+      <tbody>${topPayees.map((p) => `<tr><td>${esc(typeof cleanMerchant === 'function' ? cleanMerchant(p.desc) : p.desc)}</td><td>${p.count}</td><td style="text-align:right">${fmt$(p.total)}</td></tr>`).join('')}</tbody></table>
     </div>`;
 }
 
@@ -321,21 +339,23 @@ function renderTransactions(filter = '', catFilter = '') {
         <option value="">All categories</option>
         ${CATS.map((c) => `<option ${c === catFilter ? 'selected' : ''}>${esc(c)}</option>`).join('')}
       </select>
+      <button id="txReviewBtn" class="btn ghost small" title="Show only uncategorized (Other) transactions">🧹 Review uncategorized</button>
       <span class="muted small">${rows.length} of ${list.length} shown</span>
     </div>
     <div class="tx-scroll"><table class="data">
-      <thead><tr><th>Date</th><th>Payee</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+      <thead><tr><th>Date</th><th>Payee</th><th>Category</th><th style="text-align:right">Amount</th><th></th></tr></thead>
       <tbody>${rows.slice(0, 500).map((t, i) => `
         <tr>
           <td class="nowrap">${fmtDate(t.date)}</td>
-          <td>${esc(t.desc)}</td>
+          <td>${esc(typeof cleanMerchant === 'function' ? cleanMerchant(t.desc) : t.desc)}${(typeof cleanMerchant === 'function' && cleanMerchant(t.desc) !== t.desc.trim()) ? `<div class="muted small">${esc(t.desc)}</div>` : ''}${t.isSplit ? ' <span class="badge warn">split</span>' : ''}</td>
           <td><select class="input small catpick" data-payee="${esc(normalizePayee(t.desc))}">
             ${CATS.map((c) => `<option ${c === t.cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}
           </select></td>
           <td style="text-align:right" class="${t.amount < 0 ? 'neg' : 'pos'}">${fmt$(t.amount)}</td>
+          <td>${t.id && !t.isSplit ? `<button class="btn ghost small splitBtn" data-txid="${esc(t.id)}" title="Split this transaction across categories">✂ Split</button>` : ''}</td>
         </tr>`).join('')}</tbody>
     </table>${rows.length > 500 ? '<p class="muted small">Showing first 500 — narrow the search to see more.</p>' : ''}</div>
-    <p class="muted small">Changing a category remembers that payee for the rest of this session.</p>`;
+    <p class="muted small">Changing a category remembers that payee for the rest of this session — and now also in your exported Profile (v2). Use the <strong>Cleanup</strong> tab for reusable rules, custom categories, and bulk fixes.</p>`;
   $('txSearch').addEventListener('input', (e) => renderTransactions(e.target.value, $('txCatFilter').value));
   $('txCatFilter').addEventListener('change', (e) => renderTransactions($('txSearch').value, e.target.value));
   document.querySelectorAll('.catpick').forEach((sel) => sel.addEventListener('change', (e) => {
@@ -344,6 +364,9 @@ function renderTransactions(filter = '', catFilter = '') {
     const q2 = $('txSearch') ? $('txSearch').value : '', cf = $('txCatFilter') ? $('txCatFilter').value : '';
     renderTransactions(q2, cf);
   }));
+  const rv = $('txReviewBtn');
+  if (rv) rv.addEventListener('click', () => renderTransactions('', 'Other'));
+  document.querySelectorAll('.splitBtn').forEach((b) => b.addEventListener('click', () => { if (typeof openSplitDialog === 'function') openSplitDialog(b.dataset.txid); }));
 }
 
 /* ================= findings ================= */
@@ -591,33 +614,63 @@ function pairTransfers(txns) {
 
 function handleFiles(fileList) {
   const all = Array.from(fileList || []);
-  const files = all.filter((f) => f && /\.(csv|txt)$/i.test(f.name));
+  const files = all.filter((f) => f && /\.(csv|txt|ofx|qfx|qbo|pdf|xlsx|xls)$/i.test(f.name));
   const fe = $('fileError');
   if (!files.length) {
-    if (all.length) { fe.hidden = false; fe.textContent = '⚠️ No usable CSV files in that drop — export your statement as CSV and try again.'; }
+    if (all.length) { fe.hidden = false; fe.textContent = '⚠️ No usable statement files in that drop — drop a CSV, OFX/QFX, PDF, or Excel statement export and try again.'; }
     return;
   }
   fe.hidden = true;
   setStatus(`⏳ Reading ${files.length} file${files.length === 1 ? '' : 's'}…`, false);
   const results = [];
   let pending = files.length;
+  const done = (entry) => { results.push(entry); if (--pending === 0) mergeAndBoot(files, results); };
   files.forEach((file) => {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'pdf' || ext === 'xlsx' || ext === 'xls') {
+      const fn = ext === 'pdf' ? window.SA_importPDF : window.SA_importXLSX;
+      if (typeof fn !== 'function') { done({ file, res: null, error: 'Import module still loading — wait a second and drop the file again.' }); return; }
+      fn(file).then((res) => done({ file, res, error: (res && res.error) || null }))
+        .catch((err) => done({ file, res: null, error: 'Could not parse that file: ' + err.message }));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const res = buildTransactions(parseCSV(String(reader.result)));
-        results.push({ file, res, error: res.error || null });
+        const text = String(reader.result);
+        let res;
+        if (ext === 'ofx' || ext === 'qfx' || ext === 'qbo' || /<OFX/i.test(text.slice(0, 2000))) res = parseOFX(text);
+        else res = buildTransactions(parseCSV(text));
+        done({ file, res, error: res.error || null });
       } catch (err) {
-        results.push({ file, res: null, error: 'Could not parse that file: ' + err.message });
+        done({ file, res: null, error: 'Could not parse that file: ' + err.message });
       }
-      if (--pending === 0) mergeAndBoot(files, results);
     };
-    reader.onerror = () => {
-      results.push({ file, res: null, error: 'Could not read that file.' });
-      if (--pending === 0) mergeAndBoot(files, results);
-    };
+    reader.onerror = () => done({ file, res: null, error: 'Could not read that file.' });
     reader.readAsText(file);
   });
+}
+
+/* ================= OFX / QFX / QBO import ================= */
+function parseOFX(text) {
+  const txns = [];
+  let bank = 'OFX';
+  const org = text.match(/<ORG>([^<\r\n]+)/i);
+  if (org) bank = org[1].trim();
+  const blocks = text.match(/<STMTTRN>[\s\S]*?<\/STMTTRN>/gi) || text.match(/<STMTTRN>[\s\S]*?(?=<STMTTRN>|<\/STMTTRN>|<\/BANKTRANLIST>)/gi) || [];
+  const grab = (blk, tag) => { const m = blk.match(new RegExp('<' + tag + '>([^<\\r\\n]+)', 'i')); return m ? m[1].trim() : ''; };
+  for (const blk of blocks) {
+    const rawDate = grab(blk, 'DTPOSTED').slice(0, 8);
+    if (rawDate.length < 8) continue;
+    const d = new Date(+rawDate.slice(0, 4), +rawDate.slice(4, 6) - 1, +rawDate.slice(6, 8));
+    const amt = parseAmount(grab(blk, 'TRNAMT'));
+    const desc = grab(blk, 'NAME') || grab(blk, 'MEMO') || grab(blk, 'PAYEE');
+    if (isNaN(d) || amt === null || !desc) continue;
+    txns.push({ date: d, desc, amount: amt });
+  }
+  if (!txns.length) return { error: 'No OFX transactions found — check the file is a .ofx/.qfx/.qbo export from your bank.' };
+  txns.sort((a, b) => a.date - b.date);
+  return { txns, bank, format: 'ofx' };
 }
 
 function mergeAndBoot(files, results) {

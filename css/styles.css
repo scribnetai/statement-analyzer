@@ -270,3 +270,16 @@ button.brand:hover{background:rgba(255,255,255,.05)}
 .brand-item .bi{font-size:1.05rem;line-height:1}
 .brand-item.is-current{color:var(--accent2);font-weight:700}
 .brand-item .cur{margin-left:auto;font-size:.7rem;color:var(--muted);font-weight:400}
+
+/* v3: cleanup / forecast / splits */
+.clean-sub{font-size:11px}
+#splitDialog{border:1px solid #2a3350;border-radius:14px;background:#12172a;color:#e8ecf8;max-width:520px;width:92vw;padding:20px}
+#splitDialog::backdrop{background:rgba(0,0,0,.6)}
+.split-form h3{margin-top:0}
+.split-row{display:flex;gap:8px;margin:6px 0;align-items:center}
+.split-row .input{flex:1}
+.split-actions{display:flex;gap:8px;align-items:center;margin-top:14px}
+.rule-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.rule-form .input{width:auto}
+.fc-chart{background:rgba(255,255,255,.02);border-radius:10px}
+.cat-del{padding:0 4px;min-height:0}
